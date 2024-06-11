@@ -1,4 +1,5 @@
 # Hammerstein Mk2 - a mobile robot
+# To use this file, you will need to supply your own videos and audio files and amend the full paths / names within this code
 # Before running install somne dependencies:
 # pip install pygame
 # pip install python-vlc
