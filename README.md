@@ -90,8 +90,10 @@ To set VOSK up I followed these videos:
 
 
 First Video
+https://www.youtube.com/watch?v=3Mga7_8bYpw
 
 Second Video
+https://www.youtube.com/watch?v=-0W_AxSD_t8
 
 I then had some problems installing pyaudio, apparently port audio was missing.
 install portaudio19-dev
@@ -99,4 +101,197 @@ install pyaudio
 install pyttsx3
 
 Also had t install espeak (I think).
+
+Niel Stevenson on VOSK:
+https://www.youtube.com/watch?v=LqFYmXaXBdQ
+
+https://github.com/SaraEye/SaraKIT-Speech-Recognition-Vosk-Raspberry-Pi/blob/main/SpeechRecognition.py
+
+
+Computer Vision On The Mac Testing
+
+Computer Vision for this robot will rely on OpenCV. To test on my Mac I had to install OpenVC. Without specifying the actual version I ran into errors but this worked flawlessly:
+
+pip3 install opencv-python==4.6.0.66
+
+
+To install OpenCV onto a raspberry Pi I found this up to date guide.
+
+To test OpenCv I searched for a guide on Face Recognition in Python and found this simple guide:
+https://www.datacamp.com/tutorial/face-detection-python-opencv
+
+Running the code below, on a MacBook, opens the video camera and draws a green bonding box around any faces in the images.
+
+import cv2
+
+face_classifier = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
+
+video_capture = cv2.VideoCapture(0)
+def detect_bounding_box(vid):
+    gray_image = cv2.cvtColor(vid, cv2.COLOR_BGR2GRAY)
+    faces = face_classifier.detectMultiScale(gray_image, 1.1, 5, minSize=(40, 40)) 
+    for (x, y, w, h) in faces:
+        cv2.rectangle(vid, (x, y), (x + w, y + h), (0, 255, 0), 4)
+    return faces
+
+while True:
+
+    result, video_frame = video_capture.read() 
+    if result is False:
+        break
+    
+    faces = detect_bounding_box(video_frame)
+
+    cv2.imshow("Face Detection", video_frame)
+    if cv2.waitKey(1) & 0xFF == ord("q"):
+        break
+video_capture.release()
+cv2.destroyAllWindows
+
+Now that I could detect the presence of a face in a video camera, for the purpose of this project, I needed to be able to confirm that the owner of the face was friend of foe :-) for this I needed to research further.
+I found a simple (ish) tutorial here:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+There is another more in depth tutorial here:
+
+ 
+
+
+
+
+
+
+
+For the first tutorial you need to ensure that opencv and deepface are installed.
+
+https://github.com/serengil/deepface
+
+
+https://github.com/manish-9245/Facial-Emotion-Recognition-using-OpenCV-and-Deepface/blob/main/README.md
+
+pip install deepface
+pip install --no-deps deepface (to fix package version errors)
+
+pip install pandas
+
+
+ as well as this, you needs the VGG-Face model weights file. 
+
+https://github.com/serengil/deepface_models/releases/download/v1.0/vgg_face_weights.h5/
+
+Had trouble on the Pi with numpy and cv2 
+ImportError: numpy.core.multiarray failed to import
+
+Followed advice on this thread:
+
+https://numpy.org/devdocs/user/troubleshooting-importerror.html
+
+Had to uninstall numpy and re-install using:
+apt install python3-numpy
+
+Had trouble on the Pi
+
+pip install --upgrade pandas
+
+
+Now when the face detection program is run it will open a video window and show a red NO MATCH or green MATCH if it recognises the face against the reference jpeg image.
+
+
+python3 -m pip uninstall protobuf
+
+
+When trying to reinstalling OpenCV to resolve some module errors, using this guide:
+
+https://raspberrytips.com/install-opencv-on-raspberry-pi/
+
+i noticed during the pip install of opencv the following lines:
+
+Requirement already satisfied: numpy>=1.19.3 in ./.local/lib/python3.9/site-packages (from opencv-python) (1.26.2)
+
+This may suggest that a newer version of numpy has not been installed as the requirement already satisfied with version 1.19.3 from opencv-python  version 1.26.2 
+
+DeepFace
+https://towardsdatascience.com/using-deepface-for-face-recognition-5f8d1e43f2a6
+
+Computer Vision On The Pi
+
+Whilst developing the software for Hammerstein, I have been discussing successes and issues with a friend at a local Pi Jam. Fortunately he is an accomplished programmer, with a background in Computer Vision, he also discovered some very effective lightweight face recognition software. 
+
+https://github.com/opencv/opencv_zoo/tree/main
+
+He stripped down the Face Recognition and within a venv on a Pi4 I was able to run the program successfully.
+ 
+Computer Vision Research - Trial and Error
+All of the following has now been superseded, as we are now using a Pi4 running Raspbian Bookworm and Virtual Environments. It has been left for info.
+ 
+Now to get this working on a Raspberry Pi I transferred my test code and tried to run it. It produced a ‘no module named cv2’ error. OpenCV was on this Pi, but installed for python2. I now wanted to run everything in Python3 so using this guide I installed OpenCV:
+
+https://raspberrypi-guide.github.io/programming/install-opencv
+
+To get the picamera working as long as it is setup in rasps-config you may need to install picamera array:
+
+pip install “picamera[array]”
+
+I could not work out how to incorporate the PiCamera lines of code into the programs that I had already used and in the end found that the line:
+
+cv2.VideoCapture(0) 
+
+Activates the picamera, what I need to do is research whether using the PiCamera commands helps to optimise the camera as with the existing code on the Pi it was very slow to respond.
+
+Maybe setting lower resolutions, as described here:
+https://raspberrypi.stackexchange.com/questions/110820/opencv-camera-resolution
+
+
+import cv2
+
+cap = cv2.VideoCapture(0)
+
+cap.set(3, 640)  # Set horizontal resolution
+cap.set(4, 480)  # Set vertical resolution
+
+_, img = cap.read()
+cv2.imwrite("lower_res.jpeg", img)
+
+
+
+https://bobbyhadz.com/blog/python-no-module-named-pandas
+
+
+Installing collected packages: keras
+ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.
+deepface 0.0.79 requires fire>=0.4.0, which is not installed.
+deepface 0.0.79 requires gunicorn>=20.1.0, which is not installed.
+deepface 0.0.79 requires mtcnn>=0.1.0, which is not installed.
+deepface 0.0.79 requires retina-face>=0.0.1, which is not installed.
+deepface 0.0.79 requires Flask>=1.1.2, but you have flask 1.0.2 which is incompatible.
+deepface 0.0.79 requires opencv-python>=4.5.5.64, but you have opencv-python 4.5.3.56 which is incompatible.
+
+https://raspberrypi.stackexchange.com/questions/107483/error-installing-tensorflow-cannot-find-libhdfs-so
+
+Once I finally got it working the camera was inverted and needed to be rotated 180 clockwise. I tried to find how to do this in the setting to no avail, I then opted to use cv2.rotate
+
+https://www.educative.io/answers/opencv-rotate-image
+
+https://stackoverflow.com/questions/58910779/how-to-rotate-camera-recorded-video
+
+However, when running the program it struggled to identify faces as they were upside down. To resolve this, luckily, I physically rotated the camera.
 
