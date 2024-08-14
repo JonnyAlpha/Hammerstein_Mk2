@@ -32,7 +32,11 @@ player = instance.media_player_new()
 
 # Setup voice recognition
 model = Model(r"/home/pi/HammersteinMk2/vosk-model-small-en-us-0.15")
-recognizer = KaldiRecognizer(model, 16000)
+#flush_q()
+#recognizer = KaldiRecognizer(model, 16000)
+
+#recognizer.SetGrammar('["hello"]')
+#recognizer.SetGrammar('["hello", "do", "something", "what", "is", "your", "name", "end", "entertain", "me"]')
 
 mic = pyaudio.PyAudio()
 
@@ -40,9 +44,17 @@ engine = pyttsx3.init()
 
 listening = False
 
+def flush_q():
+    with audio_q.mutex:
+        audio_q.queue.clear()
+
 def get_command():
     listening = True
     stream = mic.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8192)
+    recognizer = KaldiRecognizer(model, 16000)
+    flush_q()
+    recognizer.SetGrammar('["hello"]')
+    #recognizer.SetGrammar('["hello", "do", "something", "what", "is", "your", "name", "end", "entertain", "me"]')
     while listening:
         stream.start_stream()
         try:
