@@ -18,6 +18,9 @@ from vosk import Model, KaldiRecognizer
 import pyaudio
 import pyttsx3
 import UltraBorg3 as UltraBorg
+import queue
+
+audio_q = queue.Queue() #used to stop listening when speaking
 
 # Setup the motion sensor
 #pir = MotionSensor(23)
@@ -32,11 +35,10 @@ player = instance.media_player_new()
 
 # Setup voice recognition
 model = Model(r"/home/pi/HammersteinMk2/vosk-model-small-en-us-0.15")
-#flush_q()
-#recognizer = KaldiRecognizer(model, 16000)
+recognizer = KaldiRecognizer(model, 16000)
 
 #recognizer.SetGrammar('["hello"]')
-#recognizer.SetGrammar('["hello", "do", "something", "what", "is", "your", "name", "end", "entertain", "me"]')
+recognizer.SetGrammar('["hello", "do", "something", "what", "is", "your", "name", "quit", "Reboot", "Shut", "Down","entertain", "me"]')
 
 mic = pyaudio.PyAudio()
 
@@ -53,8 +55,8 @@ def get_command():
     stream = mic.open(format=pyaudio.paInt16, channels=1, rate=16000, input=True, frames_per_buffer=8192)
     recognizer = KaldiRecognizer(model, 16000)
     flush_q()
-    recognizer.SetGrammar('["hello"]')
-    #recognizer.SetGrammar('["hello", "do", "something", "what", "is", "your", "name", "end", "entertain", "me"]')
+    #recognizer.SetGrammar('["hello"]')
+    recognizer.SetGrammar('["hello", "do", "something", "what", "is", "your", "name", "exit", "entertain", "me"]')
     while listening:
         stream.start_stream()
         try:
@@ -173,7 +175,13 @@ def normal_operation():
             media = instance.media_new('/home/pi/HammersteinMk2/videos/Blade_Runner.mp4')
             play_video(player, media)
             # keeps playing and will not stop
-        elif command == "end program":
+        elif command == "Reboot":
+            engine.say("Reboot")
+            engine.runAndWait()
+        elif command == "Shut down":
+            engine.say("Shut down")
+            engine.runAndWait()	
+        elif command == "exit":
             media = instance.media_new('/home/pi/HammersteinMk2/videos/I_can_do_that.mp4')
             sleep(4)
             break
@@ -193,3 +201,4 @@ def main():
     
 
 main()
+
